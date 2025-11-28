@@ -61,6 +61,8 @@ config/app_config.yaml
 *.py
 /PRD/
 .codebuddy/
-**/__pycache__/
+#__pycache__/
 *.pyc
 telegram_bot.db
+*.py[cod]
+*$py.class
