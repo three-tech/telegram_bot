@@ -35,6 +35,32 @@ def init_db():
         )
     ''')
 
+    # 创建我的频道表
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS channel_my (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                channel_id INTEGER,
+                channel_name TEXT,
+                channel_type TEXT, -- supergroup
+                tag TEXT,
+                member_count INTEGER, -- 当前人数
+                create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+                update_time DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+    # 创建用户表
+    cursor.execute('''
+                CREATE TABLE IF NOT EXISTS user (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    first_name TEXT,
+                    last_name TEXT, -- supergroup
+                    type TEXT, -- 管理员
+                    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    update_time DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+
     # 创建telegram_bot_message表
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS telegram_bot_message (
@@ -161,10 +187,34 @@ def getChannelTag(chat_id):
     )
     row = cursor.fetchone()
     conn.close()
-    
+
     if row:
         return dict(row)
     return None
+
+
+def isAdminUser(user_id):
+    """
+    检查用户是否为管理员
+    
+    Args:
+        user_id: 用户的user_id
+        
+    Returns:
+        True表示是管理员,False表示不是管理员
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT type FROM user WHERE user_id = ?",
+        (user_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+
+    if row and row['type'] == '管理员':
+        return True
+    return False
 
 
 def saveChannelTag(chat_id, title, user_name, tag):
@@ -204,7 +254,6 @@ def getDistinctTags():
     cursor.execute("SELECT DISTINCT tag FROM channel_tag WHERE tag IS NOT NULL AND tag != ''")
     rows = cursor.fetchall()
     conn.close()
-    
+
     tags = [row['tag'] for row in rows]
     return tags
-

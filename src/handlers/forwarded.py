@@ -5,7 +5,7 @@ from typing import Dict, Optional, Tuple
 from telegram import Message, Update
 from telegram.ext import ContextTypes
 
-from src.database import save_message, save_message_group, getChannelTag
+from src.database import save_message, save_message_group, getChannelTag, isAdminUser
 
 
 def extractForwardInfo(message: Message) -> Tuple[bool, Optional[int], Optional[int]]:
@@ -273,7 +273,14 @@ async def forwarded_message_handler(update: Update, context: ContextTypes.DEFAUL
         )
         return
 
-    # 步骤2: 检查channel_tag
+    # 步骤2: 验证是否为管理员
+    if not isAdminUser(user.id):
+        logging.info(
+            f"忽略非管理员 {user.first_name} ({user.id}) 转发的消息"
+        )
+        return
+
+    # 步骤3: 检查channel_tag
     channelTag = getChannelTag(forwardChatId)
 
     if not channelTag:
@@ -311,11 +318,11 @@ async def forwarded_message_handler(update: Update, context: ContextTypes.DEFAUL
     tag = channelTag.get('tag')
     logging.info(f"频道 {forwardChatId} 的标签: {tag}")
 
-    # 步骤3: 提取消息内容
+    # 步骤4: 提取消息内容
     caption = extractCaption(message)
     messageType, metadata = determineMessageType(message)
 
-    # 步骤4: 保存消息
+    # 步骤5: 保存消息
     if message.media_group_id:
         dbMessageId = saveMediaGroupMessage(
             chatId=update.effective_chat.id,
