@@ -4,8 +4,8 @@ import os
 def setup_logging():
     """Configures the global logging settings."""
     # Ensure logs directory exists
-    if not os.path.exists('logs'):
-        os.makedirs('logs')
+    if not os.path.exists('../logs'):
+        os.makedirs('../logs')
 
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
