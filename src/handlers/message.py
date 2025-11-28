@@ -5,7 +5,7 @@ from typing import Dict, Optional, Tuple
 from telegram import Message, Update
 from telegram.ext import ContextTypes
 
-from src.database import save_message, save_message_group, getChannelTag, saveChannelTag
+from src.database import save_message, save_message_group, getChannelTag
 
 
 def extractForwardInfo(message: Message) -> Tuple[bool, Optional[int], Optional[int]]:
@@ -20,15 +20,15 @@ def extractForwardInfo(message: Message) -> Tuple[bool, Optional[int], Optional[
     """
     if message.forward_origin is None:
         return False, None, None
-    
+
     if message.forward_origin.type != 'channel':
         logging.info(f"检测到非频道转发: {message.forward_origin.type}")
         return False, None, None
-    
+
     forwardChatId = message.forward_origin.chat.id
     forwardMessageId = message.forward_origin.message_id
     logging.info(f"检测到频道转发 - chat: {message.forward_origin.chat.title}, message_id: {forwardMessageId}")
-    
+
     return True, forwardChatId, forwardMessageId
 
 
@@ -88,12 +88,12 @@ def extractVideoMetadata(video) -> Dict[str, any]:
         'duration': video.duration,
         'thumbnailFileId': video.thumbnail.file_id if video.thumbnail else None
     }
-    
+
     logging.info(
         f"视频 - 分辨率: {video.width}x{video.height}, "
-        f"时长: {video.duration}s, 大小: {video.file_size}, file_id: {video.file_id}"
+        f"时长: {video.duration}s, 大小: {video.file_size}"
     )
-    
+
     return metadata
 
 
@@ -109,7 +109,7 @@ def logPhotoDetails(photos) -> None:
         logging.info(
             f"  照片 {idx + 1}/{len(photos)} - "
             f"分辨率: {photo.width}x{photo.height}, "
-            f"大小: {photo.file_size}, file_id: {photo.file_id}"
+            f"大小: {photo.file_size}"
         )
 
 
@@ -126,30 +126,30 @@ def determineMessageType(message: Message) -> Tuple[str, Dict[str, any]]:
     if message.text and not message.photo and not message.video:
         logging.info(f"文本消息: {message.text}")
         return 'text', {}
-    
+
     if message.photo:
         highestResPhoto = message.photo[-1]
         logPhotoDetails(message.photo)
         return 'photo', extractPhotoMetadata(highestResPhoto)
-    
+
     if message.video:
         return 'video', extractVideoMetadata(message.video)
-    
+
     return 'text', {}
 
 
 def saveMediaGroupMessage(
-    chatId: int,
-    userId: int,
-    userName: str,
-    messageId: int,
-    forwardChatId: int,
-    forwardMessageId: int,
-    caption: Optional[str],
-    mediaGroupId: str,
-    messageType: str,
-    metadata: Dict[str, any],
-    tag: Optional[str] = None
+        chatId: int,
+        userId: int,
+        userName: str,
+        messageId: int,
+        forwardChatId: int,
+        forwardMessageId: int,
+        caption: Optional[str],
+        mediaGroupId: str,
+        messageType: str,
+        metadata: Dict[str, any],
+        tag: Optional[str] = None
 ) -> int:
     """
     保存媒体组消息
@@ -192,7 +192,7 @@ def saveMediaGroupMessage(
         thumbnail_file_id=None,
         tag=tag
     )
-    
+
     save_message_group(
         media_group_id=mediaGroupId,
         media_type=messageType,
@@ -206,22 +206,22 @@ def saveMediaGroupMessage(
         duration=metadata.get('duration'),
         thumbnail_file_id=metadata.get('thumbnailFileId')
     )
-    
+
     logging.info(f"已保存媒体组项 - 组ID: {mediaGroupId}, 类型: {messageType}, DB消息ID: {dbMessageId}")
     return dbMessageId
 
 
 def saveSingleMessage(
-    chatId: int,
-    userId: int,
-    userName: str,
-    messageId: int,
-    forwardChatId: int,
-    forwardMessageId: int,
-    caption: Optional[str],
-    messageType: str,
-    metadata: Dict[str, any],
-    tag: Optional[str] = None
+        chatId: int,
+        userId: int,
+        userName: str,
+        messageId: int,
+        forwardChatId: int,
+        forwardMessageId: int,
+        caption: Optional[str],
+        messageType: str,
+        metadata: Dict[str, any],
+        tag: Optional[str] = None
 ) -> int:
     """
     保存单条消息
@@ -263,7 +263,7 @@ def saveSingleMessage(
         thumbnail_file_id=metadata.get('thumbnailFileId'),
         tag=tag
     )
-    
+
     logging.info(f"已保存单条转发 {messageType} - 数据库ID: {dbMessageId}")
     return dbMessageId
 
@@ -278,10 +278,10 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     user = update.effective_user
     message = update.message
-    
+
     jsonMessage = json.dumps(message.to_dict(), indent=2, ensure_ascii=False)
     # logging.info(f"收到消息: {jsonMessage}")
-    
+
     # 步骤1: 验证是否为频道转发
     isChannelForward, forwardChatId, forwardMessageId = extractForwardInfo(message)
     if not isChannelForward:
@@ -289,26 +289,26 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"忽略来自 {user.first_name} ({user.id}) 的非频道消息"
         )
         return
-    
+
     # 步骤2: 检查channel_tag
     channelTag = getChannelTag(forwardChatId)
-    
+
     if not channelTag:
         # channel不存在于channel_tag表中,使用按钮提示用户
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-        
+
         channelTitle = message.forward_origin.chat.title if message.forward_origin.chat.title else "未知频道"
         channelUsername = message.forward_origin.chat.username if message.forward_origin.chat.username else ""
-        
+
         # 将频道信息存储在context.user_data中,避免callback_data过长
         if 'pending_channels' not in context.user_data:
             context.user_data['pending_channels'] = {}
-        
+
         context.user_data['pending_channels'][str(forwardChatId)] = {
             'title': channelTitle,
             'username': channelUsername
         }
-        
+
         keyboard = [
             [
                 InlineKeyboardButton("是", callback_data=f"create_tag:{forwardChatId}"),
@@ -316,7 +316,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
         ]
         replyMarkup = InlineKeyboardMarkup(keyboard)
-        
+
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=f"检测到新频道: {channelTitle}\n是否需要为该频道创建标签?",
@@ -324,14 +324,14 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         logging.info(f"频道 {channelTitle} (ID: {forwardChatId}) 不存在于channel_tag表中,已发送按钮提示")
         return
-    
+
     tag = channelTag.get('tag')
     logging.info(f"频道 {forwardChatId} 的标签: {tag}")
-    
+
     # 步骤3: 提取消息内容
     caption = extractCaption(message)
     messageType, metadata = determineMessageType(message)
-    
+
     # 步骤4: 保存消息
     if message.media_group_id:
         dbMessageId = saveMediaGroupMessage(
