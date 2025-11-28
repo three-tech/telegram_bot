@@ -1,0 +1,78 @@
+{
+  "caption": "#黑人 醉拳 ？ 会点 中国功夫 👍",
+  "caption_entities": [
+    {
+      "length": 3,
+      "offset": 0,
+      "type": "hashtag"
+    },
+    {
+      "custom_emoji_id": "5397796588443679265",
+      "length": 2,
+      "offset": 17,
+      "type": "custom_emoji"
+    }
+  ],
+  "channel_chat_created": false,
+  "delete_chat_photo": false,
+  "forward_origin": {
+    "chat": {
+      "id": -1001300542637,
+      "title": "奇趣百科💥",
+      "type": "channel",
+      "username": "qiqubaike"
+    },
+    "message_id": 568557,
+    "date": 1763651816,
+    "type": "channel"
+  },
+  "group_chat_created": false,
+  "supergroup_chat_created": false,
+  "video": {
+    "duration": 32,
+    "file_name": "VID_20251119_205505.mp4",
+    "height": 1024,
+    "mime_type": "video/mp4",
+    "width": 576,
+    "thumbnail": {
+      "height": 320,
+      "width": 180,
+      "file_id": "AAMCAQADGQEAAy1pKTlnxFmCRidLOkBmCfT32TZl7gAChgUAAg_f8USM9qvZ71h3cgEAB20AAzYE",
+      "file_size": 13845,
+      "file_unique_id": "AQADhgUAAg_f8URy"
+    },
+    "file_id": "BAACAgEAAxkBAAMtaSk5Z8RZgkYnSzpAZgn099k2Ze4AAoYFAAIP3_FEjPar2e9Yd3I2BA",
+    "file_size": 10339650,
+    "file_unique_id": "AgADhgUAAg_f8UQ",
+    "thumb": {
+      "file_id": "AAMCAQADGQEAAy1pKTlnxFmCRidLOkBmCfT32TZl7gAChgUAAg_f8USM9qvZ71h3cgEAB20AAzYE",
+      "file_unique_id": "AQADhgUAAg_f8URy",
+      "file_size": 13845,
+      "width": 180,
+      "height": 320
+    }
+  },
+  "chat": {
+    "first_name": "你在",
+    "id": 7503449593,
+    "last_name": "看我吗",
+    "type": "private"
+  },
+  "date": 1764309351,
+  "message_id": 45,
+  "from": {
+    "first_name": "你在",
+    "id": 7503449593,
+    "is_bot": false,
+    "language_code": "zh-hans",
+    "last_name": "看我吗"
+  },
+  "forward_date": 1763651816,
+  "forward_from_chat": {
+    "id": -1001300542637,
+    "title": "奇趣百科💥",
+    "username": "qiqubaike",
+    "type": "channel"
+  },
+  "forward_from_message_id": 568557
+}

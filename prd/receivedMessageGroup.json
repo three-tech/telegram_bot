@@ -1,0 +1,66 @@
+{
+  "caption": "山东 济南 网友发布视频：自家老人买 保健品 上瘾了，家里堆满了各种各样的产品，有的都过期了，退休工资全搭进去了，这可咋办呢？！ 补不死你 ！",
+  "channel_chat_created": false,
+  "delete_chat_photo": false,
+  "forward_origin": {
+    "chat": {
+      "id": -1001300542637,
+      "title": "奇趣百科💥",
+      "type": "channel",
+      "username": "qiqubaike"
+    },
+    "message_id": 568512,
+    "date": 1763633563,
+    "type": "channel"
+  },
+  "group_chat_created": false,
+  "media_group_id": "14111855747557357",
+  "supergroup_chat_created": false,
+  "video": {
+    "duration": 682,
+    "file_name": "IMG_6739.MP4",
+    "height": 848,
+    "mime_type": "video/mp4",
+    "width": 480,
+    "thumbnail": {
+      "height": 320,
+      "width": 181,
+      "file_id": "AAMCAQADGQEAAyJpJDn5_5O-GmSfAtkv-E38Aoh3PQAC9AcAAhCc-ERftqDC1-5blwEAB20AAzYE",
+      "file_size": 13481,
+      "file_unique_id": "AQAD9AcAAhCc-ERy"
+    },
+    "file_id": "BAACAgEAAxkBAAMiaSQ5-f-TvhpknwLZL_hN_AKIdz0AAvQHAAIQnPhEX7agwtfuW5c2BA",
+    "file_size": 142160417,
+    "file_unique_id": "AgAD9AcAAhCc-EQ",
+    "thumb": {
+      "file_id": "AAMCAQADGQEAAyJpJDn5_5O-GmSfAtkv-E38Aoh3PQAC9AcAAhCc-ERftqDC1-5blwEAB20AAzYE",
+      "file_unique_id": "AQAD9AcAAhCc-ERy",
+      "file_size": 13481,
+      "width": 181,
+      "height": 320
+    }
+  },
+  "chat": {
+    "first_name": "你在",
+    "id": 7503449593,
+    "last_name": "看我吗",
+    "type": "private"
+  },
+  "date": 1763981968,
+  "message_id": 39,
+  "from": {
+    "first_name": "你在",
+    "id": 7503449593,
+    "is_bot": false,
+    "language_code": "zh-hans",
+    "last_name": "看我吗"
+  },
+  "forward_date": 1763633563,
+  "forward_from_chat": {
+    "id": -1001300542637,
+    "title": "奇趣百科💥",
+    "username": "qiqubaike",
+    "type": "channel"
+  },
+  "forward_from_message_id": 568512
+}

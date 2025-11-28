@@ -44,6 +44,8 @@ def init_db():
                 channel_type TEXT, -- supergroup
                 tag TEXT,
                 member_count INTEGER, -- 当前人数
+                last_id, --上次发送的telegram_bot_message.id
+                per_count INTEGER DEFAULT 0, -- 每次发送的条数
                 create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
                 update_time DATETIME DEFAULT CURRENT_TIMESTAMP
             )

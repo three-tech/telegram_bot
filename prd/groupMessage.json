@@ -1,0 +1,52 @@
+{
+  "channel_chat_created": false,
+  "delete_chat_photo": false,
+  "group_chat_created": false,
+  "message_thread_id": 19,
+  "reply_to_message": {
+    "channel_chat_created": false,
+    "delete_chat_photo": false,
+    "entities": [
+      {
+        "length": 17,
+        "offset": 0,
+        "type": "mention"
+      }
+    ],
+    "group_chat_created": false,
+    "supergroup_chat_created": false,
+    "text": "@resources911_bot 你好",
+    "chat": {
+      "id": -1003030057616,
+      "title": "新的开始",
+      "type": "supergroup",
+      "username": "imok911"
+    },
+    "date": 1764318467,
+    "message_id": 19,
+    "from": {
+      "first_name": "你在",
+      "id": 7503449593,
+      "is_bot": false,
+      "language_code": "zh-hans",
+      "last_name": "看我吗"
+    }
+  },
+  "supergroup_chat_created": false,
+  "text": "niaho",
+  "chat": {
+    "id": -1003030057616,
+    "title": "新的开始",
+    "type": "supergroup",
+    "username": "imok911"
+  },
+  "date": 1764320580,
+  "message_id": 20,
+  "from": {
+    "first_name": "你在",
+    "id": 7503449593,
+    "is_bot": false,
+    "language_code": "zh-hans",
+    "last_name": "看我吗"
+  }
+}

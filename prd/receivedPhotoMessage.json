@@ -1,0 +1,71 @@
+{
+  "caption": "国内收入最高的寺庙top3：\n峨眉山（8.2亿）\n九华山（7.2亿）\n灵隐寺（6.7亿）",
+  "channel_chat_created": false,
+  "delete_chat_photo": false,
+  "forward_origin": {
+    "chat": {
+      "id": -1001146783417,
+      "title": "你不知道的冷知识",
+      "type": "channel",
+      "username": "knowledge1024"
+    },
+    "message_id": 19580,
+    "date": 1753795934,
+    "type": "channel"
+  },
+  "group_chat_created": false,
+  "photo": [
+    {
+      "height": 90,
+      "width": 50,
+      "file_id": "AgACAgEAAxkBAAMcaSQyU_xh_43AcVJHmfHwNeBGgoMAAp2uMRt7rEhEoGeJias2S78BAAMCAANzAAM2BA",
+      "file_size": 1179,
+      "file_unique_id": "AQADna4xG3usSER4"
+    },
+    {
+      "height": 320,
+      "width": 177,
+      "file_id": "AgACAgEAAxkBAAMcaSQyU_xh_43AcVJHmfHwNeBGgoMAAp2uMRt7rEhEoGeJias2S78BAAMCAANtAAM2BA",
+      "file_size": 18523,
+      "file_unique_id": "AQADna4xG3usSERy"
+    },
+    {
+      "height": 800,
+      "width": 442,
+      "file_id": "AgACAgEAAxkBAAMcaSQyU_xh_43AcVJHmfHwNeBGgoMAAp2uMRt7rEhEoGeJias2S78BAAMCAAN4AAM2BA",
+      "file_size": 84017,
+      "file_unique_id": "AQADna4xG3usSER9"
+    },
+    {
+      "height": 1249,
+      "width": 690,
+      "file_id": "AgACAgEAAxkBAAMcaSQyU_xh_43AcVJHmfHwNeBGgoMAAp2uMRt7rEhEoGeJias2S78BAAMCAAN5AAM2BA",
+      "file_size": 103355,
+      "file_unique_id": "AQADna4xG3usSER-"
+    }
+  ],
+  "supergroup_chat_created": false,
+  "chat": {
+    "first_name": "你在",
+    "id": 7503449593,
+    "last_name": "看我吗",
+    "type": "private"
+  },
+  "date": 1764309248,
+  "message_id": 44,
+  "from": {
+    "first_name": "你在",
+    "id": 7503449593,
+    "is_bot": false,
+    "language_code": "zh-hans",
+    "last_name": "看我吗"
+  },
+  "forward_date": 1753795934,
+  "forward_from_chat": {
+    "id": -1001146783417,
+    "title": "你不知道的冷知识",
+    "username": "knowledge1024",
+    "type": "channel"
+  },
+  "forward_from_message_id": 19580
+}
