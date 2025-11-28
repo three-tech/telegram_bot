@@ -6,6 +6,7 @@ from src.config import DB_NAME
 def get_db_connection():
     """Establishes a connection to the SQLite database."""
     conn = sqlite3.connect(DB_NAME)
+    conn.execute("PRAGMA timezone = 'Asia/Shanghai'")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -15,7 +16,7 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Create telegram_bot_message_group table for media items in a group
+    # 创建telegram_bot_message_group表
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS telegram_bot_message_group (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +35,7 @@ def init_db():
         )
     ''')
 
-    # Create telegram_bot_message table with forward fields and detailed media info
+    # 创建telegram_bot_message表
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS telegram_bot_message (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,6 +59,21 @@ def init_db():
             height INTEGER,
             duration INTEGER,
             thumbnail_file_id TEXT,
+            tag TEXT,
+            create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+            update_time DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # 创建channel标签表
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS channel_tag (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            chat_id, -- channelId
+            title TEXT, -- channel标题
+            user_name TEXT, -- channel的username
+            tag TEXT,
+            is_on TEXT,  -- 是否启用标签：'1' 表示启用，'0' 表示禁用
             create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
             update_time DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -92,7 +108,7 @@ def save_message(chat_id, from_user_id, from_user_name, message_id, message_type
                  is_forwarded=False, forward_from_channel=False, forward_from_chat_id=None,
                  forward_from_message_id=None, caption=None, media_group_id=None, file_id=None,
                  file_unique_id=None, file_name=None, mime_type=None, file_size=None,
-                 width=None, height=None, duration=None, thumbnail_file_id=None):
+                 width=None, height=None, duration=None, thumbnail_file_id=None, tag=None):
     """Saves a message to the database. Idempotent for media_group_id."""
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -111,17 +127,84 @@ def save_message(chat_id, from_user_id, from_user_name, message_id, message_type
             message_type, is_forwarded, forward_from_channel,
             forward_from_chat_id, forward_from_message_id, caption,
             media_group_id, file_id, file_unique_id, file_name, mime_type,
-            file_size, width, height, duration, thumbnail_file_id
+            file_size, width, height, duration, thumbnail_file_id, tag
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         chat_id, from_user_id, from_user_name, message_id,
         message_type, is_forwarded, forward_from_channel,
         forward_from_chat_id, forward_from_message_id, caption,
         media_group_id, file_id, file_unique_id, file_name, mime_type,
-        file_size, width, height, duration, thumbnail_file_id
+        file_size, width, height, duration, thumbnail_file_id, tag
     ))
     db_message_id = cursor.lastrowid
     conn.commit()
     conn.close()
     return db_message_id
+
+
+def getChannelTag(chat_id):
+    """
+    根据chat_id查询channel_tag信息
+    
+    Args:
+        chat_id: 频道的chat_id
+        
+    Returns:
+        channel_tag记录的字典,如果不存在则返回None
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM channel_tag WHERE chat_id = ? AND is_on = '1'",
+        (chat_id,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    
+    if row:
+        return dict(row)
+    return None
+
+
+def saveChannelTag(chat_id, title, user_name, tag):
+    """
+    保存channel_tag记录
+    
+    Args:
+        chat_id: 频道的chat_id
+        title: 频道标题
+        user_name: 频道的username
+        tag: 标签
+        
+    Returns:
+        新插入记录的id
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO channel_tag (chat_id, title, user_name, tag, is_on)
+        VALUES (?, ?, ?, ?, '1')
+    ''', (chat_id, title, user_name, tag))
+    channel_tag_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return channel_tag_id
+
+
+def getDistinctTags():
+    """
+    获取所有不重复的tag值
+    
+    Returns:
+        tag列表
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT DISTINCT tag FROM channel_tag WHERE tag IS NOT NULL AND tag != ''")
+    rows = cursor.fetchall()
+    conn.close()
+    
+    tags = [row['tag'] for row in rows]
+    return tags
+

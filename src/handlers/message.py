@@ -5,7 +5,7 @@ from typing import Dict, Optional, Tuple
 from telegram import Message, Update
 from telegram.ext import ContextTypes
 
-from src.database import save_message, save_message_group
+from src.database import save_message, save_message_group, getChannelTag, saveChannelTag
 
 
 def extractForwardInfo(message: Message) -> Tuple[bool, Optional[int], Optional[int]]:
@@ -148,7 +148,8 @@ def saveMediaGroupMessage(
     caption: Optional[str],
     mediaGroupId: str,
     messageType: str,
-    metadata: Dict[str, any]
+    metadata: Dict[str, any],
+    tag: Optional[str] = None
 ) -> int:
     """
     保存媒体组消息
@@ -188,7 +189,8 @@ def saveMediaGroupMessage(
         width=None,
         height=None,
         duration=None,
-        thumbnail_file_id=None
+        thumbnail_file_id=None,
+        tag=tag
     )
     
     save_message_group(
@@ -218,7 +220,8 @@ def saveSingleMessage(
     forwardMessageId: int,
     caption: Optional[str],
     messageType: str,
-    metadata: Dict[str, any]
+    metadata: Dict[str, any],
+    tag: Optional[str] = None
 ) -> int:
     """
     保存单条消息
@@ -257,32 +260,12 @@ def saveSingleMessage(
         width=metadata.get('width'),
         height=metadata.get('height'),
         duration=metadata.get('duration'),
-        thumbnail_file_id=metadata.get('thumbnailFileId')
+        thumbnail_file_id=metadata.get('thumbnailFileId'),
+        tag=tag
     )
     
     logging.info(f"已保存单条转发 {messageType} - 数据库ID: {dbMessageId}")
     return dbMessageId
-
-
-async def sendResponse(
-    context: ContextTypes.DEFAULT_TYPE,
-    chatId: int,
-    messageType: str,
-    dbMessageId: int
-) -> None:
-    """
-    发送处理结果响应
-    
-    Args:
-        context: Telegram上下文
-        chatId: 聊天ID
-        messageType: 消息类型
-        dbMessageId: 数据库消息ID
-    """
-    await context.bot.send_message(
-        chat_id=chatId,
-        text=f"已接收并保存频道 {messageType} (数据库ID: {dbMessageId})"
-    )
 
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -307,11 +290,49 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
     
-    # 步骤2: 提取消息内容
+    # 步骤2: 检查channel_tag
+    channelTag = getChannelTag(forwardChatId)
+    
+    if not channelTag:
+        # channel不存在于channel_tag表中,使用按钮提示用户
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        
+        channelTitle = message.forward_origin.chat.title if message.forward_origin.chat.title else "未知频道"
+        channelUsername = message.forward_origin.chat.username if message.forward_origin.chat.username else ""
+        
+        # 将频道信息存储在context.user_data中,避免callback_data过长
+        if 'pending_channels' not in context.user_data:
+            context.user_data['pending_channels'] = {}
+        
+        context.user_data['pending_channels'][str(forwardChatId)] = {
+            'title': channelTitle,
+            'username': channelUsername
+        }
+        
+        keyboard = [
+            [
+                InlineKeyboardButton("是", callback_data=f"create_tag:{forwardChatId}"),
+                InlineKeyboardButton("否", callback_data=f"skip_tag:{forwardChatId}")
+            ]
+        ]
+        replyMarkup = InlineKeyboardMarkup(keyboard)
+        
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=f"检测到新频道: {channelTitle}\n是否需要为该频道创建标签?",
+            reply_markup=replyMarkup
+        )
+        logging.info(f"频道 {channelTitle} (ID: {forwardChatId}) 不存在于channel_tag表中,已发送按钮提示")
+        return
+    
+    tag = channelTag.get('tag')
+    logging.info(f"频道 {forwardChatId} 的标签: {tag}")
+    
+    # 步骤3: 提取消息内容
     caption = extractCaption(message)
     messageType, metadata = determineMessageType(message)
     
-    # 步骤3: 保存消息
+    # 步骤4: 保存消息
     if message.media_group_id:
         dbMessageId = saveMediaGroupMessage(
             chatId=update.effective_chat.id,
@@ -323,7 +344,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             caption=caption,
             mediaGroupId=message.media_group_id,
             messageType=messageType,
-            metadata=metadata
+            metadata=metadata,
+            tag=tag
         )
     else:
         dbMessageId = saveSingleMessage(
@@ -335,8 +357,6 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             forwardMessageId=forwardMessageId,
             caption=caption,
             messageType=messageType,
-            metadata=metadata
+            metadata=metadata,
+            tag=tag
         )
-    
-    # 步骤4: 发送响应
-    await sendResponse(context, update.effective_chat.id, messageType, dbMessageId)
