@@ -11,7 +11,7 @@ def setup_logging():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.INFO,
         handlers=[
-            logging.FileHandler("logs/telegram_bot.log"),
+            logging.FileHandler("../logs/telegram_bot.log"),
             logging.StreamHandler()
         ]
     )
