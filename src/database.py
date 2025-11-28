@@ -259,3 +259,72 @@ def getDistinctTags():
 
     tags = [row['tag'] for row in rows]
     return tags
+
+
+def getAllMyChannels():
+    """
+    获取所有我的频道配置
+    
+    Returns:
+        channel_my记录列表
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM channel_my")
+    rows = cursor.fetchall()
+    conn.close()
+    
+    return [dict(row) for row in rows]
+
+
+def getMessagesByTag(tag, last_id, limit):
+    """
+    根据tag获取未转发的消息
+    
+    Args:
+        tag: 标签
+        last_id: 上次转发的消息ID
+        limit: 限制条数
+        
+    Returns:
+        消息列表
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT * FROM telegram_bot_message 
+        WHERE tag = ? AND id > ? 
+        ORDER BY id ASC 
+        LIMIT ?
+        ''',
+        (tag, last_id, limit)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    
+    return [dict(row) for row in rows]
+
+
+def updateMyChannel(channel_id, last_id, member_count, channel_name):
+    """
+    更新我的频道状态
+    
+    Args:
+        channel_id: 频道ID
+        last_id: 最新转发的消息ID
+        member_count: 频道成员数
+        channel_name: 频道名称
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        UPDATE channel_my 
+        SET last_id = ?, member_count = ?, channel_name = ?, update_time = CURRENT_TIMESTAMP 
+        WHERE channel_id = ?
+        ''',
+        (last_id, member_count, channel_name, channel_id)
+    )
+    conn.commit()
+    conn.close()
