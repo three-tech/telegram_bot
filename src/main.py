@@ -5,7 +5,7 @@ from src.config import BOT_TOKEN
 from src.database import init_db
 from src.logger import setup_logging
 from src.handlers.start import start
-from src.handlers.message import message_handler
+from src.handlers.forwarded import forwarded_message_handler
 from src.handlers.callback import callbackQueryHandler
 
 # Setup logging
@@ -21,11 +21,13 @@ def main():
     
     # Add handlers
     start_handler = CommandHandler('start', start)
-    echo_handler = MessageHandler(filters.TEXT | filters.PHOTO | filters.VIDEO & (~filters.COMMAND), message_handler)
+    # 转发处理器
+    forwarded_handler = MessageHandler(filters.FORWARDED, forwarded_message_handler)
+    # 回调处理器
     callback_handler = CallbackQueryHandler(callbackQueryHandler)
     
     application.add_handler(start_handler)
-    application.add_handler(echo_handler)
+    application.add_handler(forwarded_handler)
     application.add_handler(callback_handler)
     
     # Run the bot
