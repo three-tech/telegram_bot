@@ -1,0 +1,66 @@
+# IDE
+.idea/
+.vscode/
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+*.cover
+*.prof
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Local files
+/conf/
+*.conf
+/config.dev.yml
+/config.prod.yml
+/config.local.yml
+
+# Log files
+*.log
+*.log.*
+/log/
+
+# excel, compressed files etc.
+*.xlsx
+*.7z
+*.zip
+*.tar.gz
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build output
+build/
+
+config/app_config.yaml
+
+# others
+*.py
+/PRD/
+.codebuddy/
+**/__pycache__/
+*.pyc
+telegram_bot.db
