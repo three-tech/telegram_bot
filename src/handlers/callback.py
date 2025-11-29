@@ -28,6 +28,7 @@ async def callbackQueryHandler(update: Update, context: ContextTypes.DEFAULT_TYP
         await handleSetTag(query, callbackData, context)
     elif callbackData.startswith("new_tag:"):
         await handleNewTag(query, callbackData, context)
+    # 注意：forward_channel: 的处理已移至专门的处理器
 
 
 async def handleCreateTag(query, callbackData: str, context: ContextTypes.DEFAULT_TYPE):
@@ -70,11 +71,19 @@ async def handleCreateTag(query, callbackData: str, context: ContextTypes.DEFAUL
 
     replyMarkup = InlineKeyboardMarkup(keyboard)
 
-    await query.edit_message_text(
-        text=f"请为频道 {channelTitle} 选择标签:",
-        reply_markup=replyMarkup
-    )
-    logging.info(f"已展示tag选择列表,频道: {channelTitle}")
+    try:
+        await query.edit_message_text(
+            text=f"请为频道 {channelTitle} 选择标签:",
+            reply_markup=replyMarkup
+        )
+        logging.info(f"已展示tag选择列表,频道: {channelTitle}")
+    except Exception as e:
+        # 如果消息未被修改，说明内容相同，忽略错误
+        if "not modified" in str(e).lower():
+            logging.info(f"tag选择列表内容未变化,忽略编辑错误,频道: {channelTitle}")
+        else:
+            # 其他错误重新抛出
+            raise
 
 
 async def handleSkipTag(query, callbackData: str):
@@ -130,9 +139,8 @@ async def handleSetTag(query, callbackData: str, context: ContextTypes.DEFAULT_T
             tag=tag
         )
 
-        await query.edit_message_text(
-            text=f"已为频道 {channelTitle} 创建标签记录\n标签: {tag}"
-        )
+        success_text = f"已为频道 {channelTitle} 创建标签记录\n标签: {tag}"
+        await query.edit_message_text(text=success_text)
         logging.info(f"已创建channel_tag记录 - ID: {channelTagId}, 频道: {channelTitle}, 标签: {tag}")
 
         # 清理user_data
@@ -140,7 +148,8 @@ async def handleSetTag(query, callbackData: str, context: ContextTypes.DEFAULT_T
             del context.user_data['pending_channels'][str(chatId)]
     except Exception as e:
         logging.error(f"创建channel_tag失败: {e}")
-        await query.edit_message_text(text=f"创建失败: {str(e)}")
+        error_text = f"创建失败: {str(e)}"
+        await query.edit_message_text(text=error_text)
 
 
 async def handleNewTag(query, callbackData: str, context: ContextTypes.DEFAULT_TYPE):

@@ -1,6 +1,16 @@
 import sqlite3
+from datetime import datetime, timezone, timedelta
 
 from src.config import DB_NAME
+
+
+# 定义北京时间时区
+BEIJING_TZ = timezone(timedelta(hours=8))
+
+
+def get_beijing_time():
+    """获取当前北京时间"""
+    return datetime.now(BEIJING_TZ)
 
 
 def get_db_connection():
@@ -118,15 +128,19 @@ def save_message_group(media_group_id, media_type, file_id, file_unique_id=None,
     """Saves a media item to the message group table."""
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # 获取北京时间
+    beijing_time = get_beijing_time().strftime('%Y-%m-%d %H:%M:%S')
+    
     cursor.execute('''
         INSERT INTO telegram_bot_message_group (
             media_group_id, media_type, file_id, file_unique_id, file_name, mime_type,
-            file_size, width, height, duration, thumbnail_file_id
+            file_size, width, height, duration, thumbnail_file_id, create_time
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         media_group_id, media_type, file_id, file_unique_id, file_name, mime_type,
-        file_size, width, height, duration, thumbnail_file_id
+        file_size, width, height, duration, thumbnail_file_id, beijing_time
     ))
     conn.commit()
     conn.close()
@@ -149,21 +163,26 @@ def save_message(chat_id, from_user_id, from_user_name, message_id, message_type
             conn.close()
             return existing_row['id']
 
+    # 获取北京时间
+    beijing_time = get_beijing_time().strftime('%Y-%m-%d %H:%M:%S')
+
     cursor.execute('''
         INSERT INTO telegram_bot_message (
             chat_id, from_user_id, from_user_name, message_id, 
             message_type, is_forwarded, forward_from_channel,
             forward_from_chat_id, forward_from_message_id, caption,
             media_group_id, file_id, file_unique_id, file_name, mime_type,
-            file_size, width, height, duration, thumbnail_file_id, tag
+            file_size, width, height, duration, thumbnail_file_id, tag, 
+            create_time, update_time
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         chat_id, from_user_id, from_user_name, message_id,
         message_type, is_forwarded, forward_from_channel,
         forward_from_chat_id, forward_from_message_id, caption,
         media_group_id, file_id, file_unique_id, file_name, mime_type,
-        file_size, width, height, duration, thumbnail_file_id, tag
+        file_size, width, height, duration, thumbnail_file_id, tag,
+        beijing_time, beijing_time
     ))
     db_message_id = cursor.lastrowid
     conn.commit()
@@ -234,10 +253,14 @@ def saveChannelTag(chat_id, title, user_name, tag):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # 获取北京时间
+    beijing_time = get_beijing_time().strftime('%Y-%m-%d %H:%M:%S')
+    
     cursor.execute('''
-        INSERT INTO channel_tag (chat_id, title, user_name, tag, is_on)
-        VALUES (?, ?, ?, ?, '1')
-    ''', (chat_id, title, user_name, tag))
+        INSERT INTO channel_tag (chat_id, title, user_name, tag, is_on, create_time, update_time)
+        VALUES (?, ?, ?, ?, '1', ?, ?)
+    ''', (chat_id, title, user_name, tag, beijing_time, beijing_time))
     channel_tag_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -301,6 +324,37 @@ def getMessagesByTag(tag, last_id, limit):
         (tag, last_id, limit)
     )
     rows = cursor.fetchall()
+    
+    # 获取消息组的详细信息
+    messages = []
+    for row in rows:
+        message = dict(row)
+        # 如果有media_group_id，获取组内所有媒体文件
+        if message.get('media_group_id'):
+            message['group_media'] = getMessageGroupByMediaId(message['media_group_id'])
+        messages.append(message)
+    
+    conn.close()
+    return messages
+
+
+def getMessageGroupByMediaId(media_group_id):
+    """
+    根据media_group_id获取消息组的所有媒体文件
+    
+    Args:
+        media_group_id: 媒体组ID
+        
+    Returns:
+        媒体文件列表
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM telegram_bot_message_group WHERE media_group_id = ?",
+        (media_group_id,)
+    )
+    rows = cursor.fetchall()
     conn.close()
     
     return [dict(row) for row in rows]
@@ -318,13 +372,17 @@ def updateMyChannel(channel_id, last_id, member_count, channel_name):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # 获取北京时间
+    beijing_time = get_beijing_time().strftime('%Y-%m-%d %H:%M:%S')
+    
     cursor.execute(
         '''
         UPDATE channel_my 
-        SET last_id = ?, member_count = ?, channel_name = ?, update_time = CURRENT_TIMESTAMP 
+        SET last_id = ?, member_count = ?, channel_name = ?, update_time = ? 
         WHERE channel_id = ?
         ''',
-        (last_id, member_count, channel_name, channel_id)
+        (last_id, member_count, channel_name, beijing_time, channel_id)
     )
     conn.commit()
     conn.close()
